@@ -1,6 +1,7 @@
 import re
 from collections import Counter
 from typing import Sequence
+from tqdm import tqdm
 
 
 def sparse_embedding(text: str) -> dict[str, int]:
@@ -25,7 +26,7 @@ def concat_sparse(
         raise ValueError("ids and embeddings must have the same length")
 
     vocab = build_vocabulary(embeddings)
-    matrix = [[emb.get(word, 0) for word in vocab] for emb in embeddings]
+    matrix = [[emb.get(word, 0) for word in vocab] for emb in tqdm(embeddings, desc="Building matrix", unit="doc")]
     return list(ids), vocab, matrix
 
 
