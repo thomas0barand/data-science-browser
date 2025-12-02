@@ -6,4 +6,4 @@ data/*
 
 # Poetry
 poetry.lock
-
+outputs/results/*
