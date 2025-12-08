@@ -3,12 +3,13 @@
 
 import sys
 from pathlib import Path
+import json
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from scripts.generate_predictions_sparse import evaluate_predictions
+from scripts.generate_predictions_sparse import load_predictions, evaluate_predictions
 
 DATA_DIR = PROJECT_ROOT / "data"
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "results"
@@ -17,7 +18,7 @@ def main():
     predictions_csv = OUTPUT_DIR / "preds_sparse_embedding_without_corpus_text_decimated.csv"
     valid_tsv = DATA_DIR / "valid.tsv"
     
-    thresholds = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    thresholds = [0.01*i for i in range(100)]
     
     print("="*70)
     print("TESTING DIFFERENT THRESHOLDS")
@@ -25,29 +26,32 @@ def main():
     print(f"\nPredictions: {predictions_csv.name}")
     print(f"Validation: {valid_tsv.name}\n")
     
-    results_summary = []
+    # Load predictions once and calculate AUC
+    predictions, auc = load_predictions(predictions_csv, valid_tsv)
+    
+    results_summary = {}
     
     for threshold in thresholds:
         output_csv = OUTPUT_DIR / f"evaluation_threshold_{threshold:.2f}.csv"
         
-        print(f"\n{'='*70}")
-        print(f"THRESHOLD: {threshold}")
-        print(f"{'='*70}")
-        
-        evaluate_predictions(
-            predictions_csv=predictions_csv,
+        results = evaluate_predictions(
+            predictions=predictions,
             valid_tsv=valid_tsv,
             output_csv=output_csv,
-            threshold=threshold
+            threshold=threshold,
+            auc=auc
         )
         
-        # Parse the metrics from output (we'd need to modify evaluate_predictions to return them)
-        # For now, the function prints them
+        results_summary[threshold] = results
+        with open(OUTPUT_DIR / "results_summary.json", "w") as f:
+            json.dump(results_summary, f, indent=4)
     
     print("\n" + "="*70)
     print("TESTING COMPLETE")
     print("="*70)
     print("\nCheck the outputs/results/ directory for detailed results.")
+
+
 
 if __name__ == "__main__":
     main()

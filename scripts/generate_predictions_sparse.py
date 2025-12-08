@@ -79,49 +79,136 @@ def get_corpus_ids(ids: list[str]) -> list[str]:
     corpus_ids = [cid for cid in ids if cid in corpus_ids_set]
     return sorted(corpus_ids)  # Sort for consistent ordering
 
-def evaluate_predictions(
-    predictions_csv: Path,
-    valid_tsv: Path,
-    output_csv: Path,
-    threshold: float = 0.1
-):
-    """
-    Evaluate predictions based on valid.tsv.
+def calculate_auc(y_true: list, y_scores: list) -> float:
+    """Calculate ROC AUC score using Wilcoxon-Mann-Whitney statistic."""
+    if len(set(y_true)) < 2:
+        return 0.0
     
-    For each (query_id, corpus_id) pair in valid.tsv:
-    - Looks up the cosine similarity from predictions_csv
-    - Outputs 1 if similarity > threshold, else 0
+    n_pos = sum(y_true)
+    n_neg = len(y_true) - n_pos
+    
+    if n_pos == 0 or n_neg == 0:
+        return 0.0
+    
+    # Count how many times a positive score is greater than a negative score
+    pairs = list(zip(y_scores, y_true))
+    
+    auc_sum = 0.0
+    for i, (score_i, label_i) in enumerate(pairs):
+        if label_i == 1:  # Positive example
+            for score_j, label_j in pairs:
+                if label_j == 0:  # Negative example
+                    if score_i > score_j:
+                        auc_sum += 1.0
+                    elif score_i == score_j:
+                        auc_sum += 0.5
+    
+    return auc_sum / (n_pos * n_neg)
+
+
+def load_predictions(predictions_csv: Path, valid_tsv: Path) -> tuple[dict[str, dict[str, float]], float]:
+    """
+    Load predictions CSV into memory and calculate AUC.
     
     Args:
         predictions_csv: Path to predictions CSV file
-        valid_tsv: Path to valid.tsv file
-        output_csv: Path to output CSV file
-        threshold: Threshold for binary classification (default: 0.1)
+        valid_tsv: Path to validation TSV file for AUC calculation
+        
+    Returns:
+        Tuple of (predictions dict, auc_score)
+        - predictions: Dictionary mapping query_id -> {corpus_id: similarity}
+        - auc_score: Pre-calculated AUC score
     """
     print("="*70)
-    print("EVALUATING PREDICTIONS")
+    print("LOADING PREDICTIONS")
     print("="*70)
     
-    # Load predictions CSV into memory
     print(f"\nLoading predictions from {predictions_csv.name}...")
+    file_size_mb = predictions_csv.stat().st_size / (1024 * 1024)
+    print(f"  File size: {file_size_mb:.2f} MB")
+    
+    # Count total rows for progress bar
+    print("  Counting rows...")
+    with predictions_csv.open('r', encoding='utf-8') as f:
+        total_rows = sum(1 for _ in f) - 1
+    print(f"  Total queries: {total_rows}")
+    
     predictions = {}
     
     with predictions_csv.open('r', encoding='utf-8') as f:
         reader = csv.reader(f)
         header = next(reader)
-        corpus_ids = header[1:]  # Skip 'query_id' column
+        corpus_ids = header[1:]
         
         print(f"  Corpus columns: {len(corpus_ids)}")
+        print("  Loading predictions...")
         
-        # Create mapping: {query_id: {corpus_id: similarity}}
-        for row in reader:
+        for row in tqdm(reader, total=total_rows, desc="  Processing queries", unit="query"):
             if not row:
                 continue
             query_id = row[0]
-            similarities = {corpus_ids[i]: float(row[i+1]) for i in range(len(corpus_ids))}
+            similarities = {cid: float(val) for cid, val in zip(corpus_ids, row[1:])}
             predictions[query_id] = similarities
     
     print(f"  ✓ Loaded predictions for {len(predictions)} queries")
+    
+    # Calculate AUC from validation set
+    print(f"\nCalculating AUC from {valid_tsv.name}...")
+    y_true = []
+    y_scores = []
+    
+    with valid_tsv.open('r', encoding='utf-8') as f:
+        next(f)  # Skip header
+        
+        for line in tqdm(f, desc="  Processing validation pairs", unit="pair"):
+            line = line.strip()
+            if not line:
+                continue
+            
+            parts = line.split('\t')
+            if len(parts) < 3:
+                continue
+            
+            query_id, corpus_id, ground_truth = parts[0], parts[1], parts[2]
+            
+            if query_id in predictions and corpus_id in predictions[query_id]:
+                similarity = predictions[query_id][corpus_id]
+            else:
+                similarity = 0.0
+            
+            y_true.append(int(ground_truth))
+            y_scores.append(similarity)
+    
+    auc = calculate_auc(y_true, y_scores)
+    print(f"  ✓ AUC Score: {auc:.4f}\n")
+    
+    return predictions, auc
+
+
+def evaluate_predictions(
+    predictions: dict[str, dict[str, float]],
+    valid_tsv: Path,
+    output_csv: Path,
+    threshold: float = 0.1,
+    auc: float = 0.0
+):
+    """
+    Evaluate predictions based on valid.tsv.
+    
+    For each (query_id, corpus_id) pair in valid.tsv:
+    - Looks up the cosine similarity from predictions
+    - Outputs 1 if similarity > threshold, else 0
+    
+    Args:
+        predictions: Dictionary mapping query_id -> {corpus_id: similarity}
+        valid_tsv: Path to valid.tsv file
+        output_csv: Path to output CSV file
+        threshold: Threshold for binary classification (default: 0.1)
+        auc: Pre-calculated AUC score (default: 0.0)
+    """
+    print("="*70)
+    print(f"EVALUATING PREDICTIONS (threshold={threshold})")
+    print("="*70)
     
     # Process valid.tsv
     print(f"\nProcessing {valid_tsv.name}...")
@@ -149,6 +236,7 @@ def evaluate_predictions(
                 prediction = 1 if similarity > threshold else 0
             else:
                 # Missing pair - default to 0
+                similarity = 0.0
                 prediction = 0
                 missing_pairs += 1
             
@@ -156,7 +244,7 @@ def evaluate_predictions(
                 'query_id': query_id,
                 'corpus_id': corpus_id,
                 'ground_truth': ground_truth,
-                'similarity': similarity if query_id in predictions and corpus_id in predictions[query_id] else 0.0,
+                'similarity': similarity,
                 'prediction': prediction
             })
     
@@ -175,37 +263,52 @@ def evaluate_predictions(
     
     print(f"  ✓ Saved {len(results)} evaluations")
     
-    # Calculate metrics
-    print("\n" + "="*70)
-    print("EVALUATION METRICS")
-    print("="*70)
-    
+    # Calculate metrics and concatenate into a dict
     correct = sum(1 for r in results if int(r['ground_truth']) == r['prediction'])
     total = len(results)
     accuracy = correct / total if total > 0 else 0
-    
+
     true_positives = sum(1 for r in results if r['prediction'] == 1 and int(r['ground_truth']) == 1)
     false_positives = sum(1 for r in results if r['prediction'] == 1 and int(r['ground_truth']) == 0)
     false_negatives = sum(1 for r in results if r['prediction'] == 0 and int(r['ground_truth']) == 1)
     true_negatives = sum(1 for r in results if r['prediction'] == 0 and int(r['ground_truth']) == 0)
-    
+
     precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
     recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
-    
-    print(f"\nThreshold: {threshold}")
-    print(f"Total pairs: {total}")
-    print(f"\nConfusion Matrix:")
-    print(f"  True Positives:  {true_positives:6d}")
-    print(f"  False Positives: {false_positives:6d}")
-    print(f"  True Negatives:  {true_negatives:6d}")
-    print(f"  False Negatives: {false_negatives:6d}")
-    print(f"\nMetrics:")
-    print(f"  Accuracy:  {accuracy:.4f}")
-    print(f"  Precision: {precision:.4f}")
-    print(f"  Recall:    {recall:.4f}")
-    print(f"  F1 Score:  {f1:.4f}")
+
+    metrics = {
+        "threshold": threshold,
+        "total_pairs": total,
+        "true_positives": true_positives,
+        "false_positives": false_positives,
+        "true_negatives": true_negatives,
+        "false_negatives": false_negatives,
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "auc": auc
+    }
+
+    print("\n" + "="*70)
+    print("EVALUATION METRICS")
     print("="*70)
+    print(f"\nThreshold: {metrics['threshold']}")
+    print(f"Total pairs: {metrics['total_pairs']}")
+    print(f"\nConfusion Matrix:")
+    print(f"  True Positives:  {metrics['true_positives']:6d}")
+    print(f"  False Positives: {metrics['false_positives']:6d}")
+    print(f"  True Negatives:  {metrics['true_negatives']:6d}")
+    print(f"  False Negatives: {metrics['false_negatives']:6d}")
+    print(f"\nMetrics:")
+    print(f"  Accuracy:  {metrics['accuracy']:.4f}")
+    print(f"  Precision: {metrics['precision']:.4f}")
+    print(f"  Recall:    {metrics['recall']:.4f}")
+    print(f"  F1 Score:  {metrics['f1']:.4f}")
+    print(f"  AUC-ROC:   {metrics['auc']:.4f}")
+    print("="*70)
+    return metrics
 
 def main():
     print("="*70)
@@ -350,10 +453,12 @@ if __name__ == "__main__":
         output_csv = Path(args.output) if args.output else OUTPUT_DIR / "evaluation_results.csv"
         valid_tsv = DATA_DIR / "valid.tsv"
         
+        predictions, auc = load_predictions(predictions_csv, valid_tsv)
         evaluate_predictions(
-            predictions_csv=predictions_csv,
+            predictions=predictions,
             valid_tsv=valid_tsv,
             output_csv=output_csv,
-            threshold=args.threshold
+            threshold=args.threshold,
+            auc=auc
         )
 
