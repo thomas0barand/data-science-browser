@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-"""Generate bigram embeddings with TF-IDF."""
-
 import json
 import pickle
 import sys
@@ -15,66 +13,51 @@ from utils import concat_sparse
 
 DATA_DIR = PROJECT_ROOT / "data"
 
-def load_jsonl_dict(path: Path, id_field: str = "_id") -> dict[str, dict]:
+def load_jsonl(path: Path):
     items = {}
-    with path.open("r", encoding="utf-8") as fh:
-        for line in tqdm(fh, desc=f"Loading {path.name}"):
-            line = line.strip()
-            if not line:
-                continue
-            data = json.loads(line)
-            key = data.get(id_field)
-            if key is not None:
-                items[str(key)] = data
+    with path.open("r", encoding="utf-8") as f:
+        for line in tqdm(f, desc=f"Loading {path.name}"):
+            if line.strip():
+                data = json.loads(line)
+                if "_id" in data:
+                    items[data["_id"]] = data
     return items
 
-def collect_texts_bigram(use_tfidf=True):
-    queries = load_jsonl_dict(DATA_DIR / "queries.jsonl")
-    corpus = load_jsonl_dict(DATA_DIR / "corpus.jsonl")
+def collect_texts_bigram():
+    queries = load_jsonl(DATA_DIR / "queries.jsonl")
+    corpus = load_jsonl(DATA_DIR / "corpus.jsonl")
     
-    ids = []
-    embeddings = []
-    seen_ids = set()
+    ids, embeddings, seen = [], [], set()
     
-    print("Processing queries...")
     for qid, payload in tqdm(queries.items(), desc="Queries"):
         text = payload.get("text", "").strip()
-        if not text or qid in seen_ids:
-            continue
-        ids.append(qid)
-        embeddings.append(bigram_embedding(text))
-        seen_ids.add(qid)
+        if text and qid not in seen:
+            ids.append(qid)
+            embeddings.append(bigram_embedding(text))
+            seen.add(qid)
     
-    print("Processing corpus...")
     for cid, payload in tqdm(corpus.items(), desc="Corpus"):
-        if cid in seen_ids:
-            continue
-        title = (payload.get("title") or "").strip()
-        combined_text = title
-        if not combined_text:
-            continue
-        ids.append(cid)
-        embeddings.append(bigram_embedding(combined_text))
-        seen_ids.add(cid)
+        if cid not in seen:
+            title = (payload.get("title") or "").strip()
+            if title:
+                ids.append(cid)
+                embeddings.append(bigram_embedding(title))
+                seen.add(cid)
     
-    if use_tfidf:
-        print("\nApplying TF-IDF...")
-        embeddings, _ = tfidf_weights_bigram(embeddings)
-    
+    print("Applying TF-IDF...")
+    embeddings, _ = tfidf_weights_bigram(embeddings)
     return ids, embeddings
 
 def main():
     OUTPUT_PATH = DATA_DIR / "sparses_embedding_bigram_tfidf.pkl"
     
-    ids, embeddings = collect_texts_bigram(use_tfidf=True)
+    ids, embeddings = collect_texts_bigram()
     ids, vocab, matrix = concat_sparse(ids, embeddings)
     
-    print(f"\nBigram embeddings: {len(ids)} docs with vocab size {len(vocab)}")
+    print(f"\n{len(ids)} docs, {len(vocab)} terms")
     
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     with OUTPUT_PATH.open("wb") as f:
         pickle.dump({"ids": ids, "vocab": vocab, "matrix": matrix}, f)
-    
     print(f"Saved to {OUTPUT_PATH}")
 
 if __name__ == "__main__":

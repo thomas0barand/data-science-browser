@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""Test different thresholds for binary classification."""
-
 import sys
-from pathlib import Path
 import json
+from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -17,41 +15,22 @@ OUTPUT_DIR = PROJECT_ROOT / "outputs" / "results"
 def main():
     predictions_csv = OUTPUT_DIR / "preds_sparse_embedding_without_corpus_text_decimated.csv"
     valid_tsv = DATA_DIR / "valid.tsv"
+    thresholds = [0.01 * i for i in range(100)]
     
-    thresholds = [0.01*i for i in range(100)]
+    print(f"Testing {len(thresholds)} thresholds on {predictions_csv.name}")
     
-    print("="*70)
-    print("TESTING DIFFERENT THRESHOLDS")
-    print("="*70)
-    print(f"\nPredictions: {predictions_csv.name}")
-    print(f"Validation: {valid_tsv.name}\n")
-    
-    # Load predictions once and calculate AUC
     predictions, auc = load_predictions(predictions_csv, valid_tsv)
-    
     results_summary = {}
     
     for threshold in thresholds:
         output_csv = OUTPUT_DIR / f"evaluation_threshold_{threshold:.2f}.csv"
-        
-        results = evaluate_predictions(
-            predictions=predictions,
-            valid_tsv=valid_tsv,
-            output_csv=output_csv,
-            threshold=threshold,
-            auc=auc
-        )
-        
+        results = evaluate_predictions(predictions, valid_tsv, output_csv, threshold, auc)
         results_summary[threshold] = results
+        
         with open(OUTPUT_DIR / "results_summary.json", "w") as f:
             json.dump(results_summary, f, indent=4)
     
-    print("\n" + "="*70)
-    print("TESTING COMPLETE")
-    print("="*70)
-    print("\nCheck the outputs/results/ directory for detailed results.")
-
-
+    print(f"\nDone! Results in {OUTPUT_DIR}/")
 
 if __name__ == "__main__":
     main()
