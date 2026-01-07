@@ -8,7 +8,7 @@ from tqdm import tqdm
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.utils import concat_sparse, sparse_embedding
+from src.utils import concat_sparse, sparse_embedding, tfidf_weights
 DATA_DIR = PROJECT_ROOT / "data"
 
 # Mots-outils français et anglais communs
@@ -34,7 +34,7 @@ def load_jsonl_dict(path: Path, id_field: str = "_id") -> dict[str, dict]:
     return items
 
 
-def collect_texts(queries = "queries_small.jsonl", corpus = "corpus_small.jsonl", get_corpus_text = True):
+def collect_texts(queries = "queries_small.jsonl", corpus = "corpus_small.jsonl", get_corpus_text = True, use_tfidf = False):
     queries = load_jsonl_dict(DATA_DIR / queries)
     corpus = load_jsonl_dict(DATA_DIR / corpus)
 
@@ -74,14 +74,21 @@ def collect_texts(queries = "queries_small.jsonl", corpus = "corpus_small.jsonl"
     if not ids:
         raise RuntimeError("No texts available to embed.")
 
+    # Apply TF-IDF if requested
+    if use_tfidf:
+        print("\nApplying TF-IDF weighting...")
+        embeddings, _ = tfidf_weights(embeddings)
+        print(f"TF-IDF applied to {len(embeddings)} documents")
+
     return ids, embeddings
 
 
 def concat_sparse_with_progress(
-    ids: list[str], embeddings: list[dict[str, int]]
-) -> tuple[list[str], list[str], list[list[int]]]:
+    ids: list[str], embeddings: list[dict]
+) -> tuple[list[str], list[str], list[list[float]]]:
     """
     Wrapper around concat_sparse with progress bar.
+    Handles both int (frequency) and float (TF-IDF) embeddings.
     """
     print("Building vocabulary...")
     from src.utils import build_vocabulary
@@ -209,11 +216,12 @@ def decimate(
 
 def main():
 
-    OUTPUT_PATH = DATA_DIR / "sparses_embedding_without_corpus_text_decimated.pkl"
+    USE_TFIDF = True  # Set to True to use TF-IDF, False for raw frequencies
+    OUTPUT_PATH = DATA_DIR / ("sparses_embedding_tfidf.pkl" if USE_TFIDF else "sparses_embedding_without_corpus_text_decimated.pkl")
     corpus_name = "corpus.jsonl"
     queries_name = "queries.jsonl"
 
-    ids, embeddings = collect_texts(queries=queries_name, corpus=corpus_name, get_corpus_text=False)
+    ids, embeddings = collect_texts(queries=queries_name, corpus=corpus_name, get_corpus_text=False, use_tfidf=USE_TFIDF)
     ids, vocab, matrix = concat_sparse(ids, embeddings)
     
     print(f"\nOriginal embeddings: {len(ids)} docs with vocab size {len(vocab)}")

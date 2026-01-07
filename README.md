@@ -74,3 +74,37 @@ results = evaluator.evaluate(loader.validation)
 ## Project Goal
 
 Build a search engine that finds semantically similar scientific articles. Given a query article, the system ranks candidate articles to retrieve the most relevant citations.
+
+## ✨ Recent Updates: TF-IDF Implementation
+
+**TF-IDF** (Term Frequency - Inverse Document Frequency) has been implemented as an improvement over raw frequency-based embeddings.
+
+### Quick Start
+
+```bash
+# Compare TF-IDF vs raw frequencies
+poetry run python scripts/compare_tfidf.py
+
+# Generate predictions with TF-IDF
+poetry run python scripts/generate_predictions_tfidf.py
+```
+
+### Key Benefits
+- **Better discrimination**: Rare terms get higher weights
+- **Noise reduction**: Common words have less influence
+- **Improved rankings**: More relevant results in top-k
+
+### Documentation
+- 📖 **Quick Start**: `QUICK_START_TFIDF.txt` - Visual summary
+- 📖 **User Guide**: `TFIDF_GUIDE.md` - Complete usage guide
+- 🔧 **Technical Details**: `docs/tfidf_implementation.md`
+- 📊 **Implementation Summary**: `IMPLEMENTATION_SUMMARY.md`
+- ✅ **Validation Checklist**: `CHECKLIST_TFIDF.md`
+- 📂 **Files List**: `FILES_CREATED_TFIDF.md`
+- 🏗️ **Architecture**: `docs/architecture_tfidf.md`
+- 📊 **Full Summary**: `docs/ameliorations_implementees.md`
+
+### Files Generated
+- `data/sparses_embedding_tfidf.pkl` (138 MB, 26,657 docs, 2,663 terms)
+- `scripts/compare_tfidf.py` (comparison tool)
+- `scripts/generate_predictions_tfidf.py` (prediction generator)

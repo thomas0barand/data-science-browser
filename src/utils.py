@@ -1,4 +1,5 @@
 import re
+import math
 from collections import Counter
 from typing import Sequence
 from tqdm import tqdm
@@ -8,6 +9,49 @@ def sparse_embedding(text: str) -> dict[str, int]:
     clean = re.sub(r"[^a-z0-9\s]", " ", text.lower())
     words = [w for w in clean.split() if w]
     return Counter(words)
+
+
+def tfidf_weights(
+    embeddings: Sequence[dict[str, int]]
+) -> tuple[list[dict[str, float]], dict[str, float]]:
+    """
+    Convert frequency-based embeddings to TF-IDF weights.
+    
+    Args:
+        embeddings: List of word frequency dictionaries
+    
+    Returns:
+        (tfidf_embeddings, idf_dict)
+        - tfidf_embeddings: List of TF-IDF weighted dictionaries
+        - idf_dict: Dictionary of IDF values for each term
+    """
+    n_docs = len(embeddings)
+    
+    # Calculate document frequency (DF) for each term
+    df = Counter()
+    for emb in embeddings:
+        for word in emb.keys():
+            df[word] += 1
+    
+    # Calculate IDF: log(N / DF)
+    idf = {word: math.log(n_docs / freq) for word, freq in df.items()}
+    
+    # Calculate TF-IDF for each document
+    tfidf_embeddings = []
+    for emb in embeddings:
+        doc_length = sum(emb.values())
+        if doc_length == 0:
+            tfidf_embeddings.append({})
+            continue
+        
+        # TF: normalized frequency, IDF: inverse document frequency
+        tfidf_doc = {
+            word: (freq / doc_length) * idf[word]
+            for word, freq in emb.items()
+        }
+        tfidf_embeddings.append(tfidf_doc)
+    
+    return tfidf_embeddings, idf
 
 
 def build_vocabulary(embeddings: Sequence[dict[str, int]]) -> list[str]:

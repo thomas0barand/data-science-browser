@@ -10,7 +10,7 @@ package-mode = false
 python = "^3.12"
 matplotlib = "^3.10.7"
 scikit-learn = "^1.7.2"
-torch = "^2.0.0"
+torch = "2.4.1"
 tqdm = "^4.66.0"
 
 [build-system]
