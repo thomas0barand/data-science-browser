@@ -14,11 +14,13 @@ DATA_DIR = PROJECT_ROOT / "data"
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "submissions"
 
 def load_embeddings(pkl_path):
+    # Load embeddings from a pickle file
     with pkl_path.open("rb") as f:
         data = pickle.load(f)
     return data["ids"], data["vocab"], data["matrix"]
 
 def load_test_final(path):
+    # Load test pairs from test_final.tsv
     test_data = {}
     with path.open("r", encoding="utf-8") as f:
         next(f)
@@ -32,6 +34,7 @@ def load_test_final(path):
     return test_data
 
 def load_valid_tsv(path):
+    # Load valid queries, corpus, and labels from valid.tsv
     valid_data = {}
     with path.open("r", encoding="utf-8") as f:
         next(f)
@@ -45,6 +48,7 @@ def load_valid_tsv(path):
     return valid_data
 
 def calculate_predictions(ids, matrix, precomputed_norms, test_data):
+    # Compute similarity scores for all test pairs
     id_to_idx = {doc_id: idx for idx, doc_id in enumerate(ids)}
     predictions = {}
     
@@ -68,6 +72,7 @@ def calculate_predictions(ids, matrix, precomputed_norms, test_data):
     return predictions
 
 def save_submission(predictions, test_data, file_path):
+    # Write predictions to CSV in submission format
     with file_path.open('w', encoding='utf-8') as f:
         f.write("RowId,query-id,corpus-id,score\n")
         row_id = 1
@@ -78,6 +83,7 @@ def save_submission(predictions, test_data, file_path):
                 row_id += 1
 
 def evaluate_on_valid(ids, matrix, precomputed_norms, valid_data):
+    # Compute ROC AUC on validation data
     id_to_idx = {doc_id: idx for idx, doc_id in enumerate(ids)}
     y_true, y_scores = [], []
     
@@ -99,6 +105,7 @@ def evaluate_on_valid(ids, matrix, precomputed_norms, valid_data):
     return None
 
 def main():
+    # Main function to create submissions for different methods
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     
     test_data = load_test_final(DATA_DIR / "test_final.tsv")
@@ -106,6 +113,7 @@ def main():
     
     print(f"{len(test_data)} test queries, {len(valid_data)} validation queries")
     
+    # List of embedding methods to use
     methods = [
         ("Raw", DATA_DIR / "sparses_embedding_without_corpus_text_decimated.pkl", "submission_raw.csv"),
         ("TF-IDF", DATA_DIR / "sparses_embedding_tfidf.pkl", "submission_tfidf.csv"),

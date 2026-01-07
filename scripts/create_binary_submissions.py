@@ -17,11 +17,13 @@ OUTPUT_DIR = PROJECT_ROOT / "outputs" / "submissions"
 FIGURES_DIR = PROJECT_ROOT / "outputs" / "figures"
 
 def load_embeddings(pkl_path):
+    # Load embeddings from pickle file
     with pkl_path.open("rb") as f:
         data = pickle.load(f)
     return data["ids"], data["vocab"], data["matrix"]
 
 def load_test_final(path):
+    # Load test pairs (no labels)
     test_data = {}
     with path.open("r", encoding="utf-8") as f:
         next(f)
@@ -35,6 +37,7 @@ def load_test_final(path):
     return test_data
 
 def load_valid_tsv(path):
+    # Load validation queries/corpus/labels
     valid_data = {}
     with path.open("r", encoding="utf-8") as f:
         next(f)
@@ -48,6 +51,7 @@ def load_valid_tsv(path):
     return valid_data
 
 def get_scores_on_valid(ids, matrix, precomputed_norms, valid_data):
+    # Get similarity scores for validation set
     id_to_idx = {doc_id: idx for idx, doc_id in enumerate(ids)}
     y_true, y_scores = [], []
     
@@ -67,12 +71,14 @@ def get_scores_on_valid(ids, matrix, precomputed_norms, valid_data):
     return np.array(y_true), np.array(y_scores)
 
 def find_optimal_threshold(y_true, y_scores):
+    # Find threshold maximizing TPR-FPR (Youden's J)
     fpr, tpr, thresholds = roc_curve(y_true, y_scores)
     j_scores = tpr - fpr
     optimal_idx = np.argmax(j_scores)
     return thresholds[optimal_idx], fpr, tpr, thresholds, optimal_idx
 
 def plot_roc_curve(fpr, tpr, auc_score, optimal_idx, method_name, save_path):
+    # Save ROC curve plot for the method
     plt.figure(figsize=(10, 8))
     plt.plot(fpr, tpr, 'b-', linewidth=2, label=f'ROC (AUC={auc_score:.4f})')
     plt.plot([0, 1], [0, 1], 'k--', linewidth=1, label='Random')
@@ -91,6 +97,7 @@ def plot_roc_curve(fpr, tpr, auc_score, optimal_idx, method_name, save_path):
     plt.close()
 
 def calculate_predictions_binary(ids, matrix, precomputed_norms, test_data, threshold):
+    # Generate binary predictions for test set
     id_to_idx = {doc_id: idx for idx, doc_id in enumerate(ids)}
     predictions = {}
     
@@ -114,6 +121,7 @@ def calculate_predictions_binary(ids, matrix, precomputed_norms, test_data, thre
     return predictions
 
 def save_submission(predictions, test_data, file_path):
+    # Save predictions in required CSV format
     with file_path.open('w', encoding='utf-8') as f:
         f.write("RowId,query-id,corpus-id,score\n")
         row_id = 1
@@ -124,6 +132,7 @@ def save_submission(predictions, test_data, file_path):
                 row_id += 1
 
 def main():
+    # Main evaluation/prediction pipeline
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     
@@ -177,4 +186,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

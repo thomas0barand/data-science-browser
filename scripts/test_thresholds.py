@@ -30,7 +30,7 @@ def main():
         with open(OUTPUT_DIR / "results_summary.json", "w") as f:
             json.dump(results_summary, f, indent=4)
     
-    print(f"\nDone! Results in {OUTPUT_DIR}/")
+    print(f"\nResults in {OUTPUT_DIR}/")
 
 if __name__ == "__main__":
     main()

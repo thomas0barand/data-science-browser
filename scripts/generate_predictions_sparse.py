@@ -16,6 +16,7 @@ OUTPUT_DIR = PROJECT_ROOT / "outputs" / "results"
 OUTPUT_FILE = OUTPUT_DIR / "preds_sparse_embedding_without_corpus_text_decimated.csv"
 
 def load_processed_queries(csv_path: Path):
+    """Load processed queries from a CSV file."""
     if not csv_path.exists():
         return set()
     processed = set()
@@ -31,6 +32,7 @@ def load_processed_queries(csv_path: Path):
     return processed
 
 def get_query_ids(ids):
+    """Get query IDs from a list of IDs."""
     query_ids_set = set()
     with (DATA_DIR / "queries.jsonl").open('r', encoding='utf-8') as f:
         for line in f:
@@ -39,6 +41,7 @@ def get_query_ids(ids):
     return sorted([qid for qid in ids if qid in query_ids_set])
 
 def get_corpus_ids(ids):
+    """Get corpus IDs from a list of IDs."""
     corpus_ids_set = set()
     with (DATA_DIR / "corpus.jsonl").open('r', encoding='utf-8') as f:
         for line in f:
@@ -47,6 +50,7 @@ def get_corpus_ids(ids):
     return sorted([cid for cid in ids if cid in corpus_ids_set])
 
 def calculate_auc(y_true, y_scores):
+    """Calculate AUC."""
     if len(set(y_true)) < 2:
         return 0.0
     
@@ -69,6 +73,7 @@ def calculate_auc(y_true, y_scores):
     return auc_sum / (n_pos * n_neg)
 
 def load_predictions(predictions_csv: Path, valid_tsv: Path):
+    """Load predictions from a CSV file."""
     print("Loading predictions...")
     
     with predictions_csv.open('r', encoding='utf-8') as f:

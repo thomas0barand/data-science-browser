@@ -16,6 +16,7 @@ OUTPUT_DIR = PROJECT_ROOT / "outputs" / "results"
 OUTPUT_FILE = OUTPUT_DIR / "preds_tfidf.csv"
 
 def load_processed_queries(csv_path: Path):
+    """Load processed queries from a CSV file."""
     if not csv_path.exists():
         return set()
     processed = set()
@@ -31,6 +32,7 @@ def load_processed_queries(csv_path: Path):
     return processed
 
 def get_query_ids(ids):
+    """Get query IDs from a list of IDs."""
     query_ids_set = set()
     with (DATA_DIR / "queries.jsonl").open('r', encoding='utf-8') as f:
         for line in f:
@@ -39,6 +41,7 @@ def get_query_ids(ids):
     return sorted([qid for qid in ids if qid in query_ids_set])
 
 def get_corpus_ids(ids):
+    """Get corpus IDs from a list of IDs."""
     corpus_ids_set = set()
     with (DATA_DIR / "corpus.jsonl").open('r', encoding='utf-8') as f:
         for line in f:

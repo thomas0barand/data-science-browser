@@ -20,6 +20,7 @@ plt.rcParams['axes.facecolor'] = 'white'
 plt.rcParams['figure.facecolor'] = 'white'
 
 def plot_vocabulary_distribution(vocab, matrix, output_path, title_suffix=""):
+    """Plot the vocabulary distribution of the matrix."""
     print(f"\nGenerating vocabulary distribution: {title_suffix}")
     
     term_frequencies = [sum(doc[i] for doc in matrix) for i in range(len(vocab))]
@@ -83,6 +84,7 @@ def plot_vocabulary_distribution(vocab, matrix, output_path, title_suffix=""):
     return fig
 
 def plot_query_similarity_scores(query_text, results, docs, output_path):
+    """Plot the similarity scores for a query."""
     print("\nGenerating query similarity example")
     print(f"Query: '{query_text}'")
     

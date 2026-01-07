@@ -11,6 +11,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from src.utils import concat_sparse, sparse_embedding, tfidf_weights
 DATA_DIR = PROJECT_ROOT / "data"
 
+# all the stop words that will be decimated
 STOP_WORDS = {
     'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he',
     'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'will', 'with',
