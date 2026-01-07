@@ -2,6 +2,7 @@
 import sys
 import csv
 import json
+import argparse
 from pathlib import Path
 from tqdm import tqdm
 
@@ -13,7 +14,25 @@ from sparse_browser import load_embeddings, precompute_norms, cosine_similarity_
 
 DATA_DIR = PROJECT_ROOT / "data"
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "results"
-OUTPUT_FILE = OUTPUT_DIR / "preds_sparse_embedding_without_corpus_text_decimated.csv"
+
+# Method configurations
+METHODS = {
+    "baseline": {
+        "pkl": DATA_DIR / "sparses_embedding_without_corpus_text_decimated.pkl",
+        "output": OUTPUT_DIR / "preds_baseline.csv",
+        "name": "Baseline (Raw Frequencies)"
+    },
+    "tfidf": {
+        "pkl": DATA_DIR / "sparses_embedding_tfidf.pkl",
+        "output": OUTPUT_DIR / "preds_tfidf.csv",
+        "name": "TF-IDF"
+    },
+    "bigram": {
+        "pkl": DATA_DIR / "sparses_embedding_bigram_tfidf.pkl",
+        "output": OUTPUT_DIR / "preds_bigram.csv",
+        "name": "Bigram TF-IDF"
+    }
+}
 
 def load_processed_queries(csv_path: Path):
     """Load processed queries from a CSV file."""
@@ -50,7 +69,7 @@ def get_corpus_ids(ids):
     return sorted([cid for cid in ids if cid in corpus_ids_set])
 
 def calculate_auc(y_true, y_scores):
-    """Calculate AUC."""
+    """Calculate AUC using Wilcoxon-Mann-Whitney statistic."""
     if len(set(y_true)) < 2:
         return 0.0
     
@@ -73,7 +92,7 @@ def calculate_auc(y_true, y_scores):
     return auc_sum / (n_pos * n_neg)
 
 def load_predictions(predictions_csv: Path, valid_tsv: Path):
-    """Load predictions from a CSV file."""
+    """Load predictions from a CSV file and calculate AUC."""
     print("Loading predictions...")
     
     with predictions_csv.open('r', encoding='utf-8') as f:
@@ -109,6 +128,7 @@ def load_predictions(predictions_csv: Path, valid_tsv: Path):
     return predictions, auc
 
 def evaluate_predictions(predictions, valid_tsv: Path, output_csv: Path, threshold=0.1, auc=0.0):
+    """Evaluate predictions using a threshold."""
     print(f"Evaluating with threshold={threshold}")
     
     results = []
@@ -165,12 +185,24 @@ def evaluate_predictions(predictions, valid_tsv: Path, output_csv: Path, thresho
     
     return metrics
 
-def generate_predictions():
-    print("Generating predictions")
+def generate_predictions(method: str):
+    """Generate predictions for the specified method."""
+    if method not in METHODS:
+        raise ValueError(f"Unknown method: {method}. Choose from: {list(METHODS.keys())}")
+    
+    config = METHODS[method]
+    output_file = config["output"]
+    
+    print(f"Generating predictions using {config['name']}")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     
+    if not config["pkl"].exists():
+        print(f"✗ Embeddings not found: {config['pkl']}")
+        print(f"  Run the appropriate export script first")
+        return
+    
     print("Loading embeddings...")
-    ids, vocab, matrix = load_embeddings(DATA_DIR / "sparses_embedding_without_corpus_text_decimated.pkl")
+    ids, vocab, matrix = load_embeddings(config["pkl"])
     print(f"✓ {len(ids)} docs, {len(vocab)} terms")
     
     print("Pre-computing norms...")
@@ -183,7 +215,7 @@ def generate_predictions():
     
     id_to_idx = {doc_id: idx for idx, doc_id in enumerate(ids)}
     
-    processed = load_processed_queries(OUTPUT_FILE)
+    processed = load_processed_queries(output_file)
     remaining = [qid for qid in query_ids if qid not in processed]
     
     if processed:
@@ -195,9 +227,9 @@ def generate_predictions():
         print("✓ All done!")
         return
     
-    mode = 'a' if OUTPUT_FILE.exists() and processed else 'w'
+    mode = 'a' if output_file.exists() and processed else 'w'
     
-    with OUTPUT_FILE.open(mode, newline='', encoding='utf-8') as f:
+    with output_file.open(mode, newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         
         if mode == 'w':
@@ -217,24 +249,74 @@ def generate_predictions():
             writer.writerow(row)
             f.flush()
     
-    print(f"\n✓ Done! Saved to {OUTPUT_FILE}")
+    print(f"\n✓ Done! Saved to {output_file}")
 
-if __name__ == "__main__":
-    import argparse
+def main():
+    parser = argparse.ArgumentParser(
+        description="Generate or evaluate predictions using different embedding methods",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Generate predictions using baseline method
+  python generate_predictions.py --method baseline
+  
+  # Generate predictions using TF-IDF
+  python generate_predictions.py --method tfidf
+  
+  # Generate predictions using bigrams
+  python generate_predictions.py --method bigram
+  
+  # Evaluate existing predictions
+  python generate_predictions.py --mode evaluate --method tfidf --threshold 0.15
+        """
+    )
+    parser.add_argument(
+        '--method',
+        choices=['baseline', 'tfidf', 'bigram'],
+        required=True,
+        help='Embedding method to use'
+    )
+    parser.add_argument(
+        '--mode',
+        choices=['generate', 'evaluate'],
+        default='generate',
+        help='Mode: generate predictions or evaluate against valid.tsv'
+    )
+    parser.add_argument(
+        '--threshold',
+        type=float,
+        default=0.1,
+        help='Threshold for binary classification (evaluation mode only)'
+    )
+    parser.add_argument(
+        '--predictions-csv',
+        type=str,
+        help='Path to predictions CSV file (for evaluation mode, optional)'
+    )
+    parser.add_argument(
+        '--output',
+        type=str,
+        help='Output path for evaluation results (optional)'
+    )
     
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', choices=['generate', 'evaluate'], default='generate')
-    parser.add_argument('--threshold', type=float, default=0.1)
-    parser.add_argument('--predictions-csv', type=str)
-    parser.add_argument('--output', type=str)
     args = parser.parse_args()
     
     if args.mode == 'generate':
-        generate_predictions()
+        generate_predictions(args.method)
     else:
-        predictions_csv = Path(args.predictions_csv) if args.predictions_csv else OUTPUT_FILE
-        output_csv = Path(args.output) if args.output else OUTPUT_DIR / "evaluation_results.csv"
+        config = METHODS[args.method]
+        predictions_csv = Path(args.predictions_csv) if args.predictions_csv else config["output"]
+        output_csv = Path(args.output) if args.output else OUTPUT_DIR / f"evaluation_{args.method}_results.csv"
         valid_tsv = DATA_DIR / "valid.tsv"
+        
+        if not predictions_csv.exists():
+            print(f"✗ Predictions file not found: {predictions_csv}")
+            print(f"  Run with --mode generate first")
+            return
         
         predictions, auc = load_predictions(predictions_csv, valid_tsv)
         evaluate_predictions(predictions, valid_tsv, output_csv, args.threshold, auc)
+
+if __name__ == "__main__":
+    main()
+

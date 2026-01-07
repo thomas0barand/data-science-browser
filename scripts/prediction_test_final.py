@@ -12,6 +12,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "results"
 
 def load_predictions_simple(predictions_csv: Path):
+    """Load predictions from a CSV file."""
     print(f"Loading {predictions_csv.name}...")
     
     with predictions_csv.open('r', encoding='utf-8') as f:
@@ -28,6 +29,7 @@ def load_predictions_simple(predictions_csv: Path):
     return predictions
 
 def generate_test_predictions(predictions, test_tsv: Path, output_csv: Path):
+    """Generate test predictions from a CSV file."""
     print(f"Processing {test_tsv.name}...")
     results, missing = [], 0
     
