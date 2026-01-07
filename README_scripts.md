@@ -95,6 +95,24 @@ Generates:
 - Vocabulary distribution before/after decimation
 - Query similarity example
 
+## Topic Modeling (LDA)
+
+```bash
+poetry run python scripts/topic_modeling_lda.py
+```
+
+Performs thematic analysis using Latent Dirichlet Allocation:
+- Discovers latent topics in the corpus
+- Generates topic-word distributions
+- Analyzes document-topic distributions
+- Creates visualizations of topics
+
+Outputs:
+- `outputs/models/lda_model.pkl` - Trained LDA model and results
+- `outputs/models/lda_topics.json` - Topics in JSON format
+- `outputs/figures/lda_topic_distribution.png` - Document distribution across topics
+- `outputs/figures/lda_top_words.png` - Top words per topic visualization
+
 ## Output Structure
 
 ```

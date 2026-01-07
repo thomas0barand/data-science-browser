@@ -28,7 +28,7 @@ METHODS = {
         "name": "TF-IDF"
     },
     "bigram": {
-        "pkl": DATA_DIR / "sparses_embedding_bigram_tfidf.pkl",
+        "pkl": DATA_DIR / "sparses_embedding_bigram_tfidf_decimated.pkl",
         "output": OUTPUT_DIR / "preds_bigram.csv",
         "name": "Bigram TF-IDF"
     }

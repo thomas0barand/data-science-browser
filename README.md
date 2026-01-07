@@ -82,9 +82,6 @@ Build a search engine that finds semantically similar scientific articles. Given
 ### Quick Start
 
 ```bash
-# Compare TF-IDF vs raw frequencies
-poetry run python scripts/compare_tfidf.py
-
 # Generate predictions with TF-IDF
 poetry run python scripts/generate_predictions_tfidf.py
 ```
