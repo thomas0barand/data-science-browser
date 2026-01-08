@@ -34,18 +34,6 @@ Le projet explore trois familles de méthodes :
 - Représentations augmentées
 - **→ Branche `oumaima`**
 
-## 📂 Structure
-
-```
-.
-├── data/                   # Données (corpus, requêtes, validation)
-├── src/                    # Code source commun
-├── scripts/                # Scripts d'exécution
-├── outputs/                # Résultats et visualisations
-├── notebooks/              # Notebooks Jupyter
-└── docs/                   # Documentation
-```
-
 ## 🌿 Détail des Branches
 
 ### Branch `thomas` - Sparse Embeddings ✅
@@ -60,12 +48,6 @@ Le projet explore trois familles de méthodes :
 - Best model: Bigram TF-IDF
 - AUC: **0.720**
 - F1: 0.540
-- Scripts unifiés et pipeline automatisé
-
-**Fichiers clés**:
-- `scripts/export_embeddings.py` - Export unifié
-- `scripts/generate_predictions_fast.py` - Prédictions optimisées
-- `RESULTS_SUMMARY.md` - Analyse détaillée
 
 ### Branch `aya` - Dense Embeddings
 
@@ -82,13 +64,13 @@ Le projet explore trois familles de méthodes :
 git clone https://github.com/thomas0barand/data-science-browser.git
 cd data-science-browser
 
-# Installer les dépendances
-poetry install
-
 # Choisir une branche
 git checkout thomas    # Sparse embeddings
 git checkout aya       # Dense embeddings
 git checkout oumaima   # Graph structure
+
+# Installer les dépendances
+poetry install
 ```
 
 ## 📊 Métriques d'Évaluation
@@ -99,7 +81,7 @@ git checkout oumaima   # Graph structure
 
 ## 📝 Consignes
 
-Voir `notebooks/consigne.ipynb` pour les instructions détaillées du projet.
+Voir `notebooks/consigne.ipynb` (dans les branches) pour les instructions détaillées du projet.
 
 ## 👥 Équipe
 
