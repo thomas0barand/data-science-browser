@@ -1,110 +1,113 @@
-# Data Science Browser - Scientific Literature Search
+# Data Science Browser
 
-Project for building a semantic search engine for scientific publications.
+Moteur de recherche d'information dans la littérature scientifique - MOD 7.2 (Introduction à la science des données)
 
-## Project Structure
+## 📋 Description du Projet
+
+Construction d'un moteur de recherche qui, étant donnée une publication scientifique (requête), retourne les articles sémantiquement les plus proches.
+
+**Données**:
+- Corpus: 25,000+ articles scientifiques
+- Requêtes: 1,000 articles
+- Validation: ~21,000 paires (requête, candidat) annotées
+
+**Objectif**: Pour chaque requête, identifier les 5 articles pertinents parmi ~30 candidats.
+
+## 🎯 Approches Implémentées
+
+Le projet explore trois familles de méthodes :
+
+### 1. Approche Creuse (Sparse Embeddings)
+- Matrice Documents × Termes (bag-of-words)
+- TF-IDF et variantes
+- Bigrammes
+- **→ Branche `thomas`**
+
+### 2. Approche Dense (Dense Embeddings)
+- Sentence transformers
+- Embeddings pré-entraînés
+- **→ Branche `aya`**
+
+### 3. Approche Structurelle (Graphe de Citations)
+- Graphe de citations
+- Mesures de centralité
+- Représentations augmentées
+- **→ Branche `oumaima`**
+
+## 📂 Structure
 
 ```
 .
-├── configs/              # Configuration files
-│   └── config.py
-├── data/                 # Data files
-│   ├── corpus.jsonl
-│   ├── queries.jsonl
-│   └── valid.tsv
-├── notebooks/            # Jupyter notebooks for exploration
-├── outputs/              # Generated outputs
-│   ├── models/          # Saved models
-│   ├── figures/         # Plots and visualizations
-│   └── results/         # Results files
-├── scripts/              # Standalone scripts
-│   └── run_pipeline.py
-├── src/                  # Source code
-│   ├── __init__.py
-│   ├── data_loader.py   # Data loading
-│   ├── eda.py           # Exploratory data analysis
-│   ├── preprocessing.py # Data preprocessing
-│   ├── training.py      # Training pipeline
-│   ├── evaluation.py    # Evaluation metrics
-│   ├── utils.py         # Utility functions
-│   └── models/          # Model implementations
-│       ├── __init__.py
-│       ├── base_model.py
-│       └── embedding_model.py
-├── tests/               # Unit tests
-├── consigne.ipynb       # Project instructions
-├── pyproject.toml       # Poetry dependencies
-└── README.md
+├── data/                   # Données (corpus, requêtes, validation)
+├── src/                    # Code source commun
+├── scripts/                # Scripts d'exécution
+├── outputs/                # Résultats et visualisations
+├── notebooks/              # Notebooks Jupyter
+└── docs/                   # Documentation
 ```
 
-## Installation
+## 🌿 Détail des Branches
+
+### Branch `thomas` - Sparse Embeddings ✅
+
+**Implémentation complète de l'approche creuse**:
+- Sparse embeddings (fréquences, TF-IDF)
+- Bigrammes avec/sans TF-IDF
+- Décimation du vocabulaire (stop words, stemming, filtrage fréquentiel)
+- Optimisations numpy (50x speedup)
+
+**Résultats**:
+- Best model: Bigram TF-IDF
+- AUC: **0.720**
+- F1: 0.540
+- Scripts unifiés et pipeline automatisé
+
+**Fichiers clés**:
+- `scripts/export_embeddings.py` - Export unifié
+- `scripts/generate_predictions_fast.py` - Prédictions optimisées
+- `RESULTS_SUMMARY.md` - Analyse détaillée
+
+### Branch `aya` - Dense Embeddings
+
+*À compléter*
+
+### Branch `oumaima` - Graph Structure
+
+*À compléter*
+
+## 🚀 Quick Start
 
 ```bash
+# Cloner le repo
+git clone https://github.com/thomas0barand/data-science-browser.git
+cd data-science-browser
+
+# Installer les dépendances
 poetry install
+
+# Choisir une branche
+git checkout thomas    # Sparse embeddings
+git checkout aya       # Dense embeddings
+git checkout oumaima   # Graph structure
 ```
 
-## Usage
+## 📊 Métriques d'Évaluation
 
-### Run the full pipeline
+- **Précision, Recall, F1-Score**
+- **AUC-ROC**
+- **Confusion Matrix**
 
-```bash
-poetry run python scripts/run_pipeline.py
-```
+## 📝 Consignes
 
-### Or use individual modules
+Voir `notebooks/consigne.ipynb` pour les instructions détaillées du projet.
 
-```python
-from src.data_loader import DataLoader
-from src.models.embedding_model import EmbeddingModel
-from src.evaluation import Evaluator
+## 👥 Équipe
 
-# Load data
-loader = DataLoader("data")
-loader.load_all()
+- **Thomas**: Sparse embeddings & bigrammes
+- **Aya**: Dense embeddings
+- **Oumaima**: Graphe de citations
 
-# Train model
-model = EmbeddingModel()
-model.fit(loader.corpus, loader.queries)
+---
 
-# Evaluate
-evaluator = Evaluator(model)
-results = evaluator.evaluate(loader.validation)
-```
-
-## Project Goal
-
-Build a search engine that finds semantically similar scientific articles. Given a query article, the system ranks candidate articles to retrieve the most relevant citations.
-
-## ✨ Recent Updates: TF-IDF Implementation
-
-**TF-IDF** (Term Frequency - Inverse Document Frequency) has been implemented as an improvement over raw frequency-based embeddings.
-
-### Quick Start
-
-```bash
-# Compare TF-IDF vs raw frequencies
-poetry run python scripts/compare_tfidf.py
-
-# Generate predictions with TF-IDF
-poetry run python scripts/generate_predictions_tfidf.py
-```
-
-### Key Benefits
-- **Better discrimination**: Rare terms get higher weights
-- **Noise reduction**: Common words have less influence
-- **Improved rankings**: More relevant results in top-k
-
-### Documentation
-- 📖 **Quick Start**: `QUICK_START_TFIDF.txt` - Visual summary
-- 📖 **User Guide**: `TFIDF_GUIDE.md` - Complete usage guide
-- 🔧 **Technical Details**: `docs/tfidf_implementation.md`
-- 📊 **Implementation Summary**: `IMPLEMENTATION_SUMMARY.md`
-- ✅ **Validation Checklist**: `CHECKLIST_TFIDF.md`
-- 📂 **Files List**: `FILES_CREATED_TFIDF.md`
-- 🏗️ **Architecture**: `docs/architecture_tfidf.md`
-- 📊 **Full Summary**: `docs/ameliorations_implementees.md`
-
-### Files Generated
-- `data/sparses_embedding_tfidf.pkl` (138 MB, 26,657 docs, 2,663 terms)
-- `scripts/compare_tfidf.py` (comparison tool)
-- `scripts/generate_predictions_tfidf.py` (prediction generator)
+**École Centrale de Lyon** - MOD 7.2  
+**Enseignants**: Julien Velcin, Erwan Versmée
