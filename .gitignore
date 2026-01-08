@@ -2,6 +2,8 @@
 __pycache__/
 .venv/
 
+notebooks/
+
 # Poetry
 poetry.lock
 
@@ -35,7 +37,3 @@ import.log
 .DS_Store
 Thumbs.db
 
-# Temporary files
-*.tmp
-*.bak
-*.swp
