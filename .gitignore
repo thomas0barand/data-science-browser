@@ -5,6 +5,7 @@ __pycache__/
 notebooks/
 docs/
 data/*
+outputs/results/*
 
 # Poetry
 poetry.lock
