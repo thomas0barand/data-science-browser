@@ -3,31 +3,11 @@ __pycache__/
 .venv/
 
 notebooks/
+docs/
+data/*
 
 # Poetry
 poetry.lock
-
-.DS_Store
-
-# Data files (large)
-data/*.pkl
-data/*.jsonl
-data/*.tsv
-# But keep small samples
-!data/*_small.*
-!data/README.md
-
-# Outputs (generated)
-outputs/results/*.csv
-outputs/results/*.json
-outputs/submissions/*.csv
-outputs/models/*.pkl
-outputs/figures/*.png
-# But keep specific important results
-!outputs/figures/roc_curve_bigram.png
-!outputs/results/metrics_summary.json
-
-notebooks/
 
 # Logs
 *.log
