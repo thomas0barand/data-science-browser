@@ -1,27 +1,10 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
 .venv/
-venv/
-env/
 
 # Poetry
 poetry.lock
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
 .DS_Store
 
 # Data files (large)
@@ -42,21 +25,7 @@ outputs/figures/*.png
 !outputs/figures/roc_curve_bigram.png
 !outputs/results/metrics_summary.json
 
-# LaTeX
-Data Science Browser Report/*.aux
-Data Science Browser Report/*.log
-Data Science Browser Report/*.out
-Data Science Browser Report/*.synctex.gz
-Data Science Browser Report/*.fdb_latexmk
-Data Science Browser Report/*.fls
-Data Science Browser Report/*.toc
-Data Science Browser Report/*.nlo
-# But keep the PDF
-!Data Science Browser Report/*.pdf
-
-# Notebooks
-.ipynb_checkpoints/
-notebooks/.ipynb_checkpoints/
+notebooks/
 
 # Logs
 *.log
