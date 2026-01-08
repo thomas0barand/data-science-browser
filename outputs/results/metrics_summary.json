@@ -1,0 +1,50 @@
+{
+    "baseline": {
+        "method": "baseline",
+        "name": "Baseline (Raw Frequencies)",
+        "threshold": 0.07,
+        "precision": 0.7893805309734513,
+        "recall": 0.38782608695652177,
+        "f1": 0.5201166180758018,
+        "auc": 0.6858382277432712,
+        "accuracy": 0.8821479713603818,
+        "confusion_matrix": {
+            "tp": 1338,
+            "fp": 357,
+            "tn": 17143,
+            "fn": 2112
+        }
+    },
+    "tfidf": {
+        "method": "tfidf",
+        "name": "TF-IDF",
+        "threshold": 0.07,
+        "precision": 0.6642857142857143,
+        "recall": 0.026956521739130435,
+        "f1": 0.05181058495821727,
+        "auc": 0.5119095155279503,
+        "accuracy": 0.8375178997613365,
+        "confusion_matrix": {
+            "tp": 93,
+            "fp": 47,
+            "tn": 17453,
+            "fn": 3357
+        }
+    },
+    "bigram": {
+        "method": "bigram",
+        "name": "Bigram TF-IDF",
+        "threshold": 0.04,
+        "precision": 0.6616225304749895,
+        "recall": 0.456231884057971,
+        "f1": 0.540058329044433,
+        "auc": 0.7203758260869565,
+        "accuracy": 0.8720286396181385,
+        "confusion_matrix": {
+            "tp": 1574,
+            "fp": 805,
+            "tn": 16695,
+            "fn": 1876
+        }
+    }
+}

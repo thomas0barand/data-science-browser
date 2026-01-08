@@ -22,15 +22,25 @@ METHODS = {
         "output": OUTPUT_DIR / "preds_baseline.csv",
         "name": "Baseline (Raw Frequencies)"
     },
-    "tfidf": {
+    "tfidf_old": {
         "pkl": DATA_DIR / "sparses_embedding_tfidf.pkl",
-        "output": OUTPUT_DIR / "preds_tfidf.csv",
-        "name": "TF-IDF"
+        "output": OUTPUT_DIR / "preds_tfidf_old.csv",
+        "name": "TF-IDF (old - broken)"
+    },
+    "tfidf": {
+        "pkl": DATA_DIR / "sparses_embedding_tfidf_corrected.pkl",
+        "output": OUTPUT_DIR / "preds_tfidf_corrected.csv",
+        "name": "TF-IDF (corrected)"
     },
     "bigram": {
         "pkl": DATA_DIR / "sparses_embedding_bigram_tfidf_decimated.pkl",
         "output": OUTPUT_DIR / "preds_bigram.csv",
         "name": "Bigram TF-IDF"
+    },
+    "bigram_raw": {
+        "pkl": DATA_DIR / "sparses_embedding_bigram_raw_decimated.pkl",
+        "output": OUTPUT_DIR / "preds_bigram_raw.csv",
+        "name": "Bigram RAW"
     }
 }
 
@@ -272,7 +282,7 @@ Examples:
     )
     parser.add_argument(
         '--method',
-        choices=['baseline', 'tfidf', 'bigram'],
+        choices=['baseline', 'tfidf_old', 'tfidf', 'bigram', 'bigram_raw'],
         required=True,
         help='Embedding method to use'
     )
