@@ -2,7 +2,7 @@
 
 Moteur de recherche d'information dans la littérature scientifique - MOD 7.2 (Introduction à la science des données)
 
-## 📋 Description du Projet
+## Description du Projet
 
 Construction d'un moteur de recherche qui, étant donnée une publication scientifique (requête), retourne les articles sémantiquement les plus proches.
 
@@ -13,28 +13,25 @@ Construction d'un moteur de recherche qui, étant donnée une publication scient
 
 **Objectif**: Pour chaque requête, identifier les 5 articles pertinents parmi ~30 candidats.
 
-## 🎯 Approches Implémentées
+## Approches Implémentées
 
 Le projet explore trois familles de méthodes :
 
-### 1. Approche Creuse (Sparse Embeddings)
+### 1. Approche Creuse (Sparse Embeddings) + Exploration Thématique (LDA)
 - Matrice Documents × Termes (bag-of-words)
 - TF-IDF et variantes
 - Bigrammes
 - **→ Branche `thomas`**
 
 ### 2. Approche Dense (Dense Embeddings)
-- Sentence transformers
-- Embeddings pré-entraînés
+- À compléter
 - **→ Branche `aya`**
 
 ### 3. Approche Structurelle (Graphe de Citations)
-- Graphe de citations
-- Mesures de centralité
-- Représentations augmentées
+- À compléter
 - **→ Branche `oumaima`**
 
-## 🌿 Détail des Branches
+## Détail des Branches
 
 ### Branch `thomas` - Sparse Embeddings ✅
 
@@ -79,11 +76,8 @@ poetry install
 - **AUC-ROC**
 - **Confusion Matrix**
 
-## 📝 Consignes
 
-Voir `notebooks/consigne.ipynb` (dans les branches) pour les instructions détaillées du projet.
-
-## 👥 Équipe
+## The Best Team
 
 - **Thomas**: Sparse embeddings & bigrammes
 - **Aya**: Dense embeddings
