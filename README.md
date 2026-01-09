@@ -51,7 +51,21 @@ Le projet explore trois familles de méthodes :
 
 ### Branch `aya` - Dense Embeddings
 
-*À compléter*
+- Exploration & statistiques des données  
+    
+**Approches creuses – Représentations lexicales**:  
+- Encodage Bag-of-Words avec CountVectorizer  
+    
+**Implémentation complète de l'approche dense**:  
+- Sentence-BERT all-MiniLM-L6-v2 (384D)
+- Similarité cosinus + FAISS
+- Embeddings pré-calculés et indexés  
+  
+**Résultats**:    
+- Précision : 0.8097
+- Rappel    : 0.8214
+- F-mesure  : 0.8155
+- AUC       : **0.9586**
 
 ### Branch `oumaima` - Graph Structure
 
