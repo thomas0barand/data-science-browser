@@ -28,7 +28,10 @@ Le projet explore trois familles de méthodes :
 - **→ Branche `aya`**
 
 ### 3. Approche Structurelle (Graphe de Citations)
-- À compléter
+- Construction d’un graphe de citations orienté à partir du corpus
+- Analyse structurelle du graphe (densité, degrés, centralité )
+- Enrichissement des embeddings denses (MiniLM) par le voisinage citationnel
+
 - **→ Branche `oumaima`**
 
 ## Détail des Branches
@@ -52,7 +55,11 @@ Le projet explore trois familles de méthodes :
 
 ### Branch `oumaima` - Graph Structure
 
-*À compléter*
+**Résultats:**
+
+-Modèle: MiniLM enrichi par le graphe de citations
+-AUC: **0.967**
+-Amélioration de l’AUC par rapport à MiniLM seul :**0.9673 vs 0.9586** 
 
 ## 🚀 Quick Start
 
