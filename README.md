@@ -48,9 +48,9 @@ Le projet explore trois familles de méthodes :
 - F1: 0.540
 
 ### Branch `aya` - Dense Embeddings
--Exploration & statistiques des données  
-**Approches creuses – Représentations lexicales**  
--Encodage Bag-of-Words avec CountVectorizer  
+- Exploration & statistiques des données  
+**Approches creuses – Représentations lexicales**:  
+- Encodage Bag-of-Words avec CountVectorizer  
 **Implémentation complète de l'approche dense**:  
 - Sentence-BERT all-MiniLM-L6-v2 (384D)
 - Similarité cosinus + FAISS
